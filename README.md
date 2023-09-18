@@ -1,8 +1,10 @@
 ## Project 用途
 -  使用 aws api 獲取特定帳號的一日花費
 
-## python package
+## python version && package version
+- python version (3.11.4)
 - boto3 (1.28.15)
+- python-dotenv (1.0.0)
 
 ## .env file 所需環境變數如下
 - region_name (example: ap-northeast-1)
