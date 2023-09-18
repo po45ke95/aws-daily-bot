@@ -64,7 +64,31 @@ def days(days):
 
     return cost_data
 
+def caluclate_last_two_days_ratio(cost_data):
+    if len(cost_data) < 2:
+        return "Insufficient data to calculate ratio"
+    
+    last_day_cost_str = cost_data[-1]['費用'].split(' ')[0]
+    second_last_day_cost_str = cost_data[-2]['費用'].split(' ')[0]
+
+    last_day_cost = float(last_day_cost_str)
+    second_last_day_cost = float(second_last_day_cost_str)
+
+    if second_last_day_cost != 0:
+        ratio = round((last_day_cost / second_last_day_cost) - 1, 4)
+
+        # ratio data type float -> str
+        ratio = str(ratio)
+
+        return ratio
+    else:
+        return "Cannot calculate ratio: cost for the second last day is zero."
+
 if __name__ == "__main__":
+
     day_result = days(3)
-    print("Result:", day_result)
-    print("Data_len:", len(day_result))
+    formatted_cost_data = "\n".join([f"日期: {item['日期']} , 費用: {item['費用']}," for item in day_result])
+    print("Data:", formatted_cost_data)
+
+    ratio = caluclate_last_two_days_ratio(day_result)
+    print("Ratio of last day cost to second last day cost:", ratio + '%')
