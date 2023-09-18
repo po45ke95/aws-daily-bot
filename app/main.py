@@ -84,11 +84,40 @@ def caluclate_last_two_days_ratio(cost_data):
     else:
         return "Cannot calculate ratio: cost for the second last day is zero."
 
+def monthly():
+    end = datetime.now().strftime('%Y-%m-%d')
+    start = datetime.now().strftime('%Y-%m-01')
+    response = client.get_cost_and_usage(
+        TimePeriod={
+            'Start': start,
+            'End': end
+        },
+        Granularity='MONTHLY',
+        Metrics=['AmortizedCost'],
+        Filter={
+            "Dimensions": {
+                "Key": "LINKED_ACCOUNT",
+                "Values": [account_id]
+            }
+        }
+    )
+
+    cost_now = 0
+    for item in response['ResultsByTime']:
+        date = item['TimePeriod']['Start']
+        cost_str = item['Total']['AmortizedCost']['Amount']
+        unit = item['Total']['AmortizedCost']['Unit']
+
+        cost_now += round(float(cost_str),2)
+    return cost_now
+
 if __name__ == "__main__":
 
     day_result = days(3)
-    formatted_cost_data = "\n".join([f"日期: {item['日期']} , 費用: {item['費用']}," for item in day_result])
-    print("Data:", formatted_cost_data)
+    formatted_cost_data = "\n".join([f"日期: {item['日期']}, 費用: {item['費用']}" for item in day_result])
+    print("消費日期暨時間:",formatted_cost_data)
 
     ratio = caluclate_last_two_days_ratio(day_result)
-    print("Ratio of last day cost to second last day cost:", ratio + '%')
+    print("消費成長比:", ratio + '%')
+
+    print("本月壘積消費:", monthly())
