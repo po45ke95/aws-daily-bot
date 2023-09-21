@@ -10,4 +10,5 @@
 - region_name (example: ap-northeast-1)
 - aws_access_key_id
 - aws_secret_access_key
+- aws_account_id (可於 aws 帳號中獲取)
 - (aws access_key, secret_access_key 都可以透過 aws 生成 請記得給予查詢帳單的相關權限)
