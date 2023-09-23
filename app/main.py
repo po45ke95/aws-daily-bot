@@ -66,6 +66,40 @@ def days(days):
 
     return cost_data
 
+# all used services daily cost
+def catgories(days):
+
+    end = datetime.now().strftime('%Y-%m-%d')
+    start = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
+
+    response = client.get_cost_and_usage(
+        TimePeriod={
+            'Start': start,
+            'End': end
+        },
+        Granularity='DAILY',
+        Metrics=['UnblendedCost'],
+        GroupBy=[
+            {
+                'Type': 'DIMENSION',
+                'Key': 'SERVICE'
+            }
+        ]
+    )
+    formatted_costs = []
+    for result in response['ResultsByTime']:
+        date_str = f"Date: {result['TimePeriod']['Start']}"
+        services_costs_str = []
+        for group in result['Groups']:
+            service_name = group['Keys'][0]
+            cost = float(group['Metrics']['UnblendedCost']['Amount'])
+            services_costs_str.append(f"service_name: {service_name}, cost: {cost:.2f}USD")
+
+        formatted_str = ', '.join([date_str] + services_costs_str)
+        formatted_costs.append(formatted_str)
+
+    return formatted_costs
+
 
 # calculate last two day pricing functions
 def caluclate_last_two_days_ratio(cost_data):
