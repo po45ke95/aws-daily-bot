@@ -114,8 +114,6 @@ def catgories():
     return formatted_data
 
 
-
-
 # calculate last two day pricing functions
 def caluclate_last_two_days_ratio(cost_data):
     if len(cost_data) < 2:
