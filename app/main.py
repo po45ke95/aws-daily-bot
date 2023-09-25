@@ -66,11 +66,13 @@ def days(days):
 
     return cost_data
 
-# all used services daily cost
-def catgories(days):
 
+# all used services daily cost
+def catgories():
+
+    # 设置起始日期为当前月的第一天，结束日期为今天
     end = datetime.now().strftime('%Y-%m-%d')
-    start = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d')
+    start = datetime(datetime.now().year, datetime.now().month, 1).strftime('%Y-%m-%d')
 
     response = client.get_cost_and_usage(
         TimePeriod={
@@ -86,19 +88,32 @@ def catgories(days):
             }
         ]
     )
-    formatted_costs = []
-    for result in response['ResultsByTime']:
-        date_str = f"Date: {result['TimePeriod']['Start']}"
-        services_costs_str = []
-        for group in result['Groups']:
+
+    # 使用字典来累计每个服务的总费用
+    services_total_cost = {}
+
+    for result in response.get('ResultsByTime', []):
+        for group in result.get('Groups', []):
             service_name = group['Keys'][0]
-            cost = float(group['Metrics']['UnblendedCost']['Amount'])
-            services_costs_str.append(f"service_name: {service_name}, cost: {cost:.2f}USD")
+            cost = round(float(group['Metrics']['UnblendedCost']['Amount']), 2)
 
-        formatted_str = ', '.join([date_str] + services_costs_str)
-        formatted_costs.append(formatted_str)
+            # 如果该服务在字典中，则累加费用；否则，初始化该服务的费用
+            if service_name in services_total_cost:
+                services_total_cost[service_name] += cost
+            else:
+                services_total_cost[service_name] = cost
 
-    return formatted_costs
+    # 根据费用对服务进行排序，并选择费用最高的前三个服务
+    top_three_services = sorted(services_total_cost.items(), key=lambda x: x[1], reverse=True)[:3]
+
+    # 格式化结果
+    formatted_data = {}
+    for service, cost in top_three_services:
+        formatted_data[service] = f"{'{:.2f}'.format(cost)} USD"
+
+    return formatted_data
+
+
 
 
 # calculate last two day pricing functions
@@ -167,20 +182,25 @@ def send_telegram_message(chat_id, text):
 def send_total_message():
     day_result = days(3)
     formatted_data = "\n".join([f"日期: {item['日期']} , 費用: {item['費用']}" for item in day_result])
+
     ratio = caluclate_last_two_days_ratio(day_result)
     monthly_data = monthly()
+
+    services_data = catgories()
+    formatted_services_data = "\n".join([f"服務: {service} , 費用: {cost}" for service, cost in services_data.items()])
 
     final = (
         f'AWS_ACCOUNT: {account_id}' + '\n'
         f'AWS_REGION: {region_name}' + '\n'
         f'消費日期暨時間: \n{formatted_data}' + ' (昨日尚未出帳完成僅供參考)' + '\n'
         f'消費成長比: {ratio} % (累積計算至出帳完成，不含昨日)' + '\n'
-        f'本月壘積消費: {monthly_data} USD (包含未出帳數據總和)'
+        f'本月壘積消費: {monthly_data} USD (包含未出帳數據總和)' + '\n'
+        f'本月前三服務消費: \n{formatted_services_data}'
     )
     send_telegram_message(chat_id, final)
     return final
 
 if __name__ == "__main__":
 
-    send_total_message()
+    print(send_total_message())
     logging.info(f'Send pricing data to telegram.')
