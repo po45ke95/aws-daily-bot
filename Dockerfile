@@ -6,6 +6,6 @@ COPY ./pricing /pricing
 
 RUN pip install -r requirements.txt
 
-CMD ["python", "/app/main.py"]
+CMD ["python", "/pricing/main.py"]
 
 EXPOSE 80
