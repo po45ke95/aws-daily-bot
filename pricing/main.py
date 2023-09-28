@@ -2,21 +2,18 @@ import boto3
 from datetime import datetime, timedelta
 import logging
 import requests
+import os
 
 # initialize data
-region_name = ''
-aws_access_key_id = ''
-aws_secret_access_key = ''
-account_id = ''
-telegram_token = ''
-chat_id = ''
+region_name = os.environ['REGION_NAME']
+account_id = os.environ['ACCOUNT_ID']
+telegram_token = os.environ['TELEGRAM_TOKEN']
+chat_id = os.environ['CHAT_ID']
 
 # boto3 client intialization
 client = boto3.client(
     'ce',
-    region_name=region_name,
-    aws_access_key_id=aws_access_key_id,
-    aws_secret_access_key=aws_secret_access_key
+    region_name=region_name
 )
 
 # log initialization
