@@ -10,13 +10,13 @@ aws_access_key_id = os.environ['AWS_ACCESS_KEY_ID']
 aws_secret_access_key = os.environ['AWS_SECRET_ACCESS_KEY']
 
 # backup volume id
-volumes_id = os.environ.get['VOLUMES_ID', ''].split(',')
+volumes_id = os.environ.get('VOLUMES_ID', '').split(',')
 
 # delete greater than days
 delete_days = os.environ['DELETE_DAYS']
 
 # exclude removed volume list
-exclude_volume_from_deletion = os.environ.get['EXCLUDE_VOLUME_LIST', ''].split(',')
+exclude_volume_from_deletion = os.environ.get('EXCLUDE_VOLUME_LIST', '').split(',')
 
 
 # boto3 client connection
@@ -104,8 +104,6 @@ def delete_snapshots(volume_ids):
 
 # main function
 if __name__ == "__main__":
-
-    # volumes_id = ['vol-07b7f5409dbf720be']
 
     tz = pytz.timezone('Asia/Taipei')
     current_time_utc_8 = datetime.datetime.now(tz)
