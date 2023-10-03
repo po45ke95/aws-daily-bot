@@ -189,7 +189,7 @@ def send_total_message():
         f'AWS_REGION: {region_name}' + '\n'
         f'消費日期暨時間: \n{formatted_data}' + ' (昨日尚未出帳完成僅供參考)' + '\n'
         f'消費成長比: {ratio} % (累積計算至出帳完成，不含昨日)' + '\n'
-        f'本月壘積消費: {monthly_data} USD (包含未出帳數據總和)' + '\n'
+        f'本月累積消費: {monthly_data} USD (包含未出帳數據總和)' + '\n'
         f'本月前三服務消費: \n{formatted_services_data}'
     )
     send_telegram_message(chat_id, final)
