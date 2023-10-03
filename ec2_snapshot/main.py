@@ -2,11 +2,21 @@ import boto3
 import logging
 import datetime
 import pytz
+import os
 
 # initialize data
-region_name = ''
-aws_access_key_id = ''
-aws_secret_access_key = ''
+region_name = os.environ['REGION_NAME']
+aws_access_key_id = os.environ['AWS_ACCESS_KEY_ID']
+aws_secret_access_key = os.environ['AWS_SECRET_ACCESS_KEY']
+
+# backup volume id
+volumes_id = os.environ.get['VOLUMES_ID', ''].split(',')
+
+# delete greater than days
+delete_days = os.environ['DELETE_DAYS']
+
+# exclude removed volume list
+exclude_volume_from_deletion = os.environ.get['EXCLUDE_VOLUME_LIST', ''].split(',')
 
 
 # boto3 client connection
@@ -61,13 +71,18 @@ def create_snapshots(volume_ids, description="Backup Snapshot"):
     return snapshot_ids
 
 
-def delete_snapshots_7(volume_ids):
+# delete snaphost function
+def delete_snapshots(volume_ids):
     ec2_client = boto3.client('ec2')
     current_time = datetime.datetime.now(pytz.timezone('Asia/Taipei'))
+    days = int(delete_days)
 
     deleted_flag = False
 
     for volume_id in volume_ids:
+        if volume_id in exclude_volume_from_deletion:
+            logging.info(f'Volume {volume_id} is in the exclusion list. Skipping deletion for its snapshots.')
+            continue
         try:
             snapshots = ec2_client.describe_snapshots(Filters=[{'Name': 'volume-id', 'Values': [volume_id]}])
         except Exception as e:
@@ -75,7 +90,7 @@ def delete_snapshots_7(volume_ids):
             continue
 
         for snapshot in snapshots['Snapshots']:
-            if (current_time - snapshot['StartTime'].replace(tzinfo=pytz.timezone('Asia/Taipei'))).days > 7:
+            if (current_time - snapshot['StartTime'].replace(tzinfo=pytz.timezone('Asia/Taipei'))).days > days:
                 try:
                     ec2_client.delete_snapshot(SnapshotId=snapshot['SnapshotId'])
                     logging.info(f"Deleted snapshot {snapshot['SnapshotId']} for volume {volume_id}")
@@ -90,7 +105,7 @@ def delete_snapshots_7(volume_ids):
 # main function
 if __name__ == "__main__":
 
-    volumes_id = ['vol-07b7f5409dbf720be']
+    # volumes_id = ['vol-07b7f5409dbf720be']
 
     tz = pytz.timezone('Asia/Taipei')
     current_time_utc_8 = datetime.datetime.now(tz)
@@ -98,4 +113,4 @@ if __name__ == "__main__":
 
     create_snapshots(volumes_id, f"{timestamp}")
 
-    delete_snapshots_7(volumes_id)
+    delete_snapshots(volumes_id)
