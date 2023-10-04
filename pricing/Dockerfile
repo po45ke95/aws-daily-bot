@@ -1,6 +1,6 @@
 FROM python:3.11.4-alpine
 
-COPY ../requirements.txt /requirements.txt
+COPY ./requirements.txt /requirements.txt
 
 COPY ./main.py /main.py
 
