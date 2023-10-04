@@ -17,7 +17,7 @@ remove-last-image:
     - shell
   script:
     - docker rmi $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:$SNAP_TAG || true
-    - docker rmi $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:COST_TAG || true
+    - docker rmi $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:$COST_TAG || true
     - docker rmi $(docker images --filter "dangling=true" -q --no-trunc) || true
 
 build-snapshot:
@@ -46,5 +46,5 @@ build-cost:
   script:
     - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_ENDPOINT_PREFIX
     - cd pricing
-    - docker build -t $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:COST_TAG -f ./Dockerfile . --no-cache
-    - docker push $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:COST_TAG
+    - docker build -t $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:$COST_TAG -f ./Dockerfile . --no-cache
+    - docker push $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:$COST_TAG
