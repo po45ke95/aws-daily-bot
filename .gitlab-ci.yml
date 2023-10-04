@@ -1,7 +1,9 @@
 variables:
   AWS_REGION: "ap-northeast-1"
   AWS_ECR_ENDPOINT_PREFIX: "066558833665.dkr.ecr.ap-northeast-1.amazonaws.com"
-  AWS_ECR_PROJECT_NAME: "aws-cost-pricing"
+  AWS_ECR_PROJECT_NAME: "corn"
+  SNAP_TAG: "snap-v1"
+  COST_TAG: "cost-v1"
   DEV_NS: "dev"
 
 stages:
@@ -14,15 +16,33 @@ remove-last-image:
   tags:
     - shell
   script:
-    - docker rmi $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:latest || true
+    - docker rmi $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:$SNAP_TAG || true
+    - docker rmi $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:COST_TAG || true
     - docker rmi $(docker images --filter "dangling=true" -q --no-trunc) || true
 
-build:
+build-snapshot:
   stage: build
   timeout: 10m
+  only:
+    changes:
+      - ec2_snapshot/**/*
   tags:
     - shell
   script:
     - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_ENDPOINT_PREFIX
-    - docker build -t $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:latest -f Dockerfile . --no-cache
-    - docker push $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:latest
+    - docker build -t $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:$SNAP_TAG -f ec2_snapshot/Dockerfile . --no-cache
+    - docker push $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:$
+
+
+build-cost:
+  stage: build
+  timeout: 10m
+  only:
+    changes:
+      - pricing/**/*
+  tags:
+    - shell
+  script:
+    - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_ENDPOINT_PREFIX
+    - docker build -t $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:COST_TAG -f pricing/Dockerfile . --no-cache
+    - docker push $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:COST_TAG
