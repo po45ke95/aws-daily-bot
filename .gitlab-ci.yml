@@ -31,7 +31,7 @@ build-snapshot:
   script:
     - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ECR_ENDPOINT_PREFIX
     - docker build -t $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:$SNAP_TAG -f ec2_snapshot/Dockerfile . --no-cache
-    - docker push $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:$
+    - docker push $AWS_ECR_ENDPOINT_PREFIX/$AWS_ECR_PROJECT_NAME:$SNAP_TAG
 
 
 build-cost:
